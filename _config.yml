@@ -1,0 +1,7 @@
+github:
+  is_project_page: true
+title: step by step
+description: on the way
+show_downloads: false
+google_analytics:
+theme: jekyll-theme-cayman
