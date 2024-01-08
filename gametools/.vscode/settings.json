@@ -1,0 +1,9 @@
+{
+    "clang-format.executable": "E:/Project/golang/src/gametools/protobuff/clang-format.exe",
+    "files.exclude": {
+        "*.sql": true,
+        "**/*.exe": true,
+        "go.mod": true,
+        "go.sum": true
+    }
+}

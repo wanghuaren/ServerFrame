@@ -1,0 +1,38 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+gamedb/db.log
+gamedb/*.sql
+gamedb/mysql/
+
+gameserver/server.log
+gamegate/gate.log
+gametools/tools.log
+
+gametools/*.sql
+gametools/protobuff/pbcshap/
+gametools/execluts/execlout/
+gametools/execluts/execlin/
+server/
+gameutils/pbstruct/
+gameutils/dbstruct/
+gametools/protobuff/proto/client/tables.proto
+gametools/protobuff/pbts/
+gametools/node_modules/
+gametools/protobuff/pbgo/
+gametools/protobuff/pbmicro/
+gametools/protobuff/pbpython/
+projmxd

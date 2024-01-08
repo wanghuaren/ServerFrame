@@ -1,0 +1,287 @@
+package commuts
+
+import (
+	"baseutils/baseuts"
+	"math"
+	"reflect"
+	"strconv"
+	"strings"
+	_ "unsafe"
+)
+
+func Struct2Map(_struct interface{}) map[string]interface{}
+
+func StructReflect2Map(_type reflect.Type, _value reflect.Value) map[string]interface{} {
+	if _type.Kind() == reflect.Ptr {
+		_type = _type.Elem()
+		_value = _value.Elem()
+	}
+	_itemMap := map[string]interface{}{}
+	for n := 0; n < _type.NumField(); n++ {
+		_fValue := _value.Field(n)
+		_fType := _type.Field(n)
+		if _fType.Name == "unknownFields" || _fType.Name == "sizeCache" {
+			continue
+		}
+		switch _fType.Type.Kind() {
+		case reflect.String:
+			_itemMap[_fType.Name] = _fValue.String()
+		case reflect.Int:
+			_itemMap[_fType.Name] = _fValue.Int()
+		case reflect.Int8:
+			_itemMap[_fType.Name] = int8(_fValue.Int())
+		case reflect.Int16:
+			_itemMap[_fType.Name] = int16(_fValue.Int())
+		case reflect.Int32:
+			_itemMap[_fType.Name] = int32(_fValue.Int())
+		case reflect.Int64:
+			_itemMap[_fType.Name] = int64(_fValue.Int())
+		case reflect.Float32, reflect.Float64:
+			_itemMap[_fType.Name] = _fValue.Float()
+		case reflect.Bool:
+			_itemMap[_fType.Name] = _fValue.Bool()
+		case reflect.Slice:
+			var _ret = []map[string]interface{}{}
+			for i := 0; i < _fValue.Len(); i++ {
+				_mValue := _fValue.Index(i)
+				if _mValue.IsNil() {
+					_ret = append(_ret, nil)
+				} else {
+					_ret = append(_ret, Struct2Map(_mValue.Interface()))
+				}
+			}
+			_itemMap[_fType.Name] = _ret
+		case reflect.Ptr:
+			if _fValue.IsNil() {
+				_itemMap[_fType.Name] = "nil"
+			} else {
+				_v := _fValue.Elem()
+				_itemMap[_fType.Name] = StructReflect2Map(_v.Type(), _v)
+			}
+		}
+	}
+	return _itemMap
+}
+
+func Map2Struct(_struct interface{}, mapValue interface{}, skipErrPrint ...bool) {
+	_value := reflect.ValueOf(_struct).Elem()
+	_type := reflect.TypeOf(_struct).Elem()
+
+	switch mapValue := mapValue.(type) {
+	case map[string]string:
+		for i := 0; i < _type.NumField(); i++ {
+			_fType := _type.Field(i)
+			_fieldName := _fType.Name
+			var _fieldValue string
+			_hasField := false
+			_fieldValue, _hasField = mapValue[_fieldName]
+			if !_hasField {
+				_fieldValue, _hasField = mapValue[strings.ToLower(_fieldName)]
+			}
+			if _hasField {
+				switch _fType.Type.Kind() {
+				case reflect.String:
+					_value.Field(i).SetString(_fieldValue)
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+					var _mValue int64 = 0
+					_v, err := strconv.ParseInt(_fieldValue, 10, 64)
+					if len(skipErrPrint) > 0 {
+						if !baseuts.ChkErrNormal(err) {
+							_mValue = _v
+						}
+					} else if !baseuts.ChkErr(err) {
+						_mValue = _v
+					}
+					_value.Field(i).SetInt(_mValue)
+				case reflect.Float32, reflect.Float64:
+					var _mValue float64 = 0
+					_v, err := strconv.ParseFloat(_fieldValue, 64)
+					if len(skipErrPrint) > 0 {
+						if !baseuts.ChkErrNormal(err) {
+							_mValue = _v
+						}
+					} else if !baseuts.ChkErr(err) {
+						_mValue = _v
+					}
+					_value.Field(i).SetFloat(_mValue)
+				case reflect.Bool:
+					var _mValue bool = true
+					if _fieldValue == "" || _fieldValue == "0" {
+						_mValue = false
+					}
+					_value.Field(i).SetBool(_mValue)
+				default:
+					baseuts.Log("Struct 字段 " + _fieldName + " 类型不对")
+				}
+			} else {
+				// baseuts.Log("Struct 字段 " + _fieldName + " 没有对应的值")
+			}
+		}
+	case map[string]interface{}:
+		for i := 0; i < _type.NumField(); i++ {
+			_fType := _type.Field(i)
+			_fieldName := _fType.Name
+			var _fieldValue interface{}
+			_hasField := false
+			_fieldValue, _hasField = mapValue[_fieldName]
+			if !_hasField {
+				_fieldValue, _hasField = mapValue[strings.ToLower(_fieldName)]
+			}
+			if _hasField {
+				switch _fType.Type.Kind() {
+				case reflect.String:
+					var _mValue = ""
+					switch reflect.TypeOf(_fieldValue).Kind() {
+					case reflect.String:
+						_mValue = _fieldValue.(string)
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+						_mValue = strconv.FormatInt(_fieldValue.(int64), 10)
+					case reflect.Float32, reflect.Float64:
+						_mValue = strconv.FormatFloat(_fieldValue.(float64), 'g', 32, 64)
+					case reflect.Bool:
+						_mValue = strconv.FormatBool(_fieldValue.(bool))
+					default:
+						baseuts.Log("Struct 字段 " + _fieldName + " 类型不对")
+					}
+					_value.Field(i).SetString(_mValue)
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+					var _mValue int64 = 0
+					switch reflect.TypeOf(_fieldValue).Kind() {
+					case reflect.String:
+						_v, err := strconv.ParseInt(_fieldValue.(string), 10, 64)
+						if len(skipErrPrint) > 0 {
+							if !baseuts.ChkErrNormal(err) {
+								_mValue = _v
+							}
+						} else if !baseuts.ChkErr(err) {
+							_mValue = _v
+						}
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+						_mValue = _fieldValue.(int64)
+					case reflect.Float32, reflect.Float64:
+						_mValue = int64(math.Floor(_fieldValue.(float64)))
+					case reflect.Bool:
+						if _fieldValue.(bool) {
+							_mValue = 1
+						}
+					default:
+						baseuts.Log("Struct 字段 " + _fieldName + " 类型不对")
+					}
+					_value.Field(i).SetInt(_mValue)
+				case reflect.Float32, reflect.Float64:
+					var _mValue float64 = 0
+					switch reflect.TypeOf(_fieldValue).Kind() {
+					case reflect.String:
+						_v, err := strconv.ParseFloat(_fieldValue.(string), 64)
+						if len(skipErrPrint) > 0 {
+							if !baseuts.ChkErrNormal(err) {
+								_mValue = _v
+							}
+						} else if !baseuts.ChkErr(err) {
+							_mValue = _v
+						}
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+						_mValue = float64(_fieldValue.(int64))
+					case reflect.Float32, reflect.Float64:
+						_mValue = _fieldValue.(float64)
+					case reflect.Bool:
+						if _fieldValue.(bool) {
+							_mValue = 1
+						}
+					default:
+						baseuts.Log("Struct 字段 " + _fieldName + " 类型不对")
+					}
+					_value.Field(i).SetFloat(_mValue)
+				case reflect.Bool:
+					var _mValue bool = false
+					switch reflect.TypeOf(_fieldValue).Kind() {
+					case reflect.String:
+						if len(_fieldValue.(string)) > 0 {
+							_mValue = true
+						}
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+						if _fieldValue.(int64) != 0 {
+							_mValue = true
+						}
+					case reflect.Float32, reflect.Float64:
+						if _fieldValue.(float64) != 0 {
+							_mValue = true
+						}
+					case reflect.Bool:
+						_mValue = _fieldValue.(bool)
+					default:
+						baseuts.Log("Struct 字段 " + _fieldName + " 类型不对")
+					}
+					_value.Field(i).SetBool(_mValue)
+				}
+			}
+		}
+	}
+
+}
+
+// func EnGobDB(_data interface{}) []byte
+// func DeGobDB(_data interface{}, _b []byte)
+
+func InterfaceCompare(a interface{}, b interface{}) bool {
+	aValue := reflect.ValueOf(a)
+	bValue := reflect.ValueOf(b)
+	switch aValue.Type().Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if bValue.Type().Kind() != reflect.Int && bValue.Type().Kind() != reflect.Int8 && bValue.Type().Kind() != reflect.Int16 && bValue.Type().Kind() != reflect.Int32 && bValue.Type().Kind() != reflect.Int64 {
+			return false
+		} else if aValue.Int() != bValue.Int() {
+			return false
+		}
+	case reflect.String:
+		if bValue.Type().Kind() != reflect.String {
+			return false
+		} else if aValue.String() != bValue.String() {
+			return false
+		}
+	case reflect.Bool:
+		if bValue.Type().Kind() != reflect.Bool {
+			return false
+		} else if aValue.Bool() != bValue.Bool() {
+			return false
+		}
+	default:
+		baseuts.Log("类型 " + aValue.Type().Kind().String() + " 未增加对比")
+		return false
+	}
+	return true
+}
+
+func InterfaceCompareString(a interface{}, b string) bool {
+	aValue := reflect.ValueOf(a)
+	switch aValue.Type().Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if b == "" {
+			return false
+		}
+		value, err := strconv.ParseInt(b, 10, 64)
+		if baseuts.ChkErrNormal(err) {
+			return false
+		} else if aValue.Int() != value {
+			return false
+		}
+	case reflect.String:
+		if aValue.String() != b {
+			return false
+		}
+	case reflect.Bool:
+		if b == "" {
+			return false
+		}
+		value, err := strconv.ParseBool(b)
+		if baseuts.ChkErrNormal(err) {
+			return false
+		} else if aValue.Bool() != value {
+			return false
+		}
+	default:
+		baseuts.Log("类型 " + aValue.Type().Kind().String() + " 未增加对比")
+		return false
+	}
+	return true
+}

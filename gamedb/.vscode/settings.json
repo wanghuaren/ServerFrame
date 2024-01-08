@@ -1,0 +1,9 @@
+{
+    "files.exclude": {
+        "*.log": true,
+        "*.sql": true,
+        "**/*.exe": true,
+        "go.mod": true,
+        "go.sum": true
+    }
+}

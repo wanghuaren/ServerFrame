@@ -1,0 +1,28 @@
+{
+    "files.exclude": {
+        "**/*.meta": true,
+        "**/*.s": true,
+        "**/bower_components": true,
+        "**/dist": true,
+        "**/github.com": true,
+        "**/golang.org": true,
+        "**/gopkg.in": true,
+        "**/honnef.co": true,
+        "**/howett.net": true,
+        "**/moul.io": true,
+        "**/mvdan.cc": true,
+        "**/node_modules": true,
+        "**/tmp": true,
+        "bin": true,
+        "go.mod": true,
+        "go.sum": true,
+        "Library": true,
+        "Logs": true,
+        "Packages": true,
+        "pkg": true,
+        "ProjectSettings": true,
+        "Temp": true,
+        "UserSettings": true,
+        "xlsx2json": true
+    }
+}

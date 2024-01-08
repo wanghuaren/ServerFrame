@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option go_package = "./;pbstruct";
+option csharp_namespace = "PBStruct";
+
+import "protobuff/proto/client/tables.proto";
+
+message ClientTrans {
+  int32 id = 1;
+  int32 len = 2;
+  string key = 3;
+  int32 err = 4;
+  int32 msg = 5;
+  int32 time = 6;
+  string token = 7;
+  bytes protobuff = 8;
+}
+
+message CSLogin {
+  string inventory_id = 1;
+  string code = 2;
+}
+
+message SCLogin {
+  string token = 1;
+  SCUserInfo userinfo = 2;
+}
+
+message CSChangeName {
+  string nickname = 1;
+  int32 score = 2;
+}
+
+message SCChangeName {
+  SCUserInfo userinfo = 1;
+}
+
+message CSUpdateScore {
+  int32 score = 1;
+}
+
+message SCUpdateScore {
+  SCUserInfo userinfo = 1;
+}
+
+message CSUserInfo {
+}
+
+message SCUserInfo {
+  string nickname = 1;
+  int32 score = 2;
+}
+
+message CSRank {
+}
+
+message SCRank {
+  repeated SCUserInfo userinfo = 1;
+  int32 selfRank = 2;
+}
