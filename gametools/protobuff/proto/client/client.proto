@@ -26,35 +26,10 @@ message SCLogin {
   SCUserInfo userinfo = 2;
 }
 
-message CSChangeName {
-  string nickname = 1;
-  int32 score = 2;
-}
-
-message SCChangeName {
-  SCUserInfo userinfo = 1;
-}
-
-message CSUpdateScore {
-  int32 score = 1;
-}
-
-message SCUpdateScore {
-  SCUserInfo userinfo = 1;
-}
-
 message CSUserInfo {
 }
 
 message SCUserInfo {
   string nickname = 1;
   int32 score = 2;
-}
-
-message CSRank {
-}
-
-message SCRank {
-  repeated SCUserInfo userinfo = 1;
-  int32 selfRank = 2;
 }

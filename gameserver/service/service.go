@@ -15,9 +15,6 @@ var IsDebug = model.IsDebug
 
 func InitService() {
 	ProtoDispatch.AddProtoFunc(pbstruct.CSLogin_ID, login)
-	ProtoDispatch.AddProtoFunc(pbstruct.CSChangeName_ID, changeName)
-	ProtoDispatch.AddProtoFunc(pbstruct.CSUpdateScore_ID, updateScore)
-	ProtoDispatch.AddProtoFunc(pbstruct.CSRank_ID, selfRank)
 
 	ProtoDispatch.AddProtoFunc(pbstruct.CSUserInfo_ID, userinfo)
 }
