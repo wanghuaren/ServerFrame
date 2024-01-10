@@ -24,37 +24,118 @@ message CSLogin {
 message SCLogin {
   string token = 1;
   SCUserInfo userinfo = 2;
+  SCBag userBag = 3;
+  SCStaticTab staticTab = 4;
 }
 
-message CSChangeName {
-  string nickname = 1;
-  int32 score = 2;
-}
-
-message SCChangeName {
-  SCUserInfo userinfo = 1;
-}
-
-message CSUpdateScore {
-  int32 score = 1;
-}
-
-message SCUpdateScore {
-  SCUserInfo userinfo = 1;
-}
-
-message CSUserInfo {
-}
+message CSUserInfo {}
 
 message SCUserInfo {
-  string nickname = 1;
-  int32 score = 2;
+  int32 money = 1;
+  string name = 2;
+  int32 strength = 3;
+  bool skipAD = 4;
+  int32 number = 5;
+  int32 weapon = 6;
+  bool firstPay = 7;
+  int32 chakan = 8;
+  int32 regTime = 9;
 }
 
-message CSRank {
+message CSBag {}
+
+message SCBag { repeated BagItem bag = 1; }
+
+message CSTask {}
+
+message SCTask { repeated TaskItem task = 1; }
+
+message BagItem {
+  int32 item_id = 1;
+  int32 pos = 2;
 }
 
-message SCRank {
-  repeated SCUserInfo userinfo = 1;
-  int32 selfRank = 2;
+message TaskItem {
+  int32 task_id = 1;
+  bool isFinish = 2;
 }
+
+message CSFightReady { int32 num = 1; }
+
+message SCFightReady { repeated SCUserInfo otherPlay = 1; }
+
+message CSFightResult {
+  int32 rankNum = 1;
+  int32 rate = 2;
+  int32 killNum = 3;
+}
+message SCFightResult {
+  int32 money = 1;
+  int32 rankNum = 2;
+}
+
+message CSSkipAD { bool skipAD = 1; }
+message SCSkipAD {}
+
+message CSComposeItem {
+  BagItem itemDst = 1;
+  BagItem itemSrc = 2;
+}
+
+message SCComposeItem {
+  BagItem itemDst = 1;
+  int32 delPos = 2;
+  SCUserInfo userinfo = 3;
+}
+
+message CSMoveItem {
+  BagItem itemDst = 1;
+  int32 toPos = 2;
+}
+
+message SCMoveItem {
+  BagItem itemDst = 1;
+  int32 delPos = 2;
+}
+
+message CSBuyItem { int32 itemID = 1; }
+
+message SCBuyItem {
+  int32 money = 1;
+  BagItem bagItem = 2;
+}
+
+message CSDelItem { BagItem bagItem = 1; }
+
+message SCDelItem { int32 delPos = 1; }
+
+message CSPay {
+  string orderID = 1;
+  string packageName = 2;
+  string productId = 3;
+  int32 purchaseTime = 4;
+  string purchaseToken = 5;
+  int32 quantity = 6;
+  string code = 7;
+}
+
+message SCPay {
+  string productId = 1;
+  bool chakan = 2;
+}
+
+message CSSaveError {
+  string content = 1;
+  int32 time = 2;
+  string desc = 3;
+}
+
+message SCSaveError {}
+
+message CSSyncServerTime {}
+
+message SCSyncServerTime { int32 time = 1; }
+
+message CSGMOrder { int32 orderNum = 1; }
+
+message SCGMOrder { int32 orderNum = 1; }

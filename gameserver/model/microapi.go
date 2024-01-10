@@ -73,7 +73,7 @@ func SendMicroGate(key string, buff []byte) *pbstruct.MicroTrans {
 	return microTrans
 }
 
-func CallDBCenter[T *pbstruct.UserTab | *pbstruct.MicroUserToken | *pbstruct.MicroUserTokenFixed | *pbstruct.MicroUserLogin | *pbstruct.MicroUserTokenAndUserInfo | bool | string](key string, args ...interface{}) T {
+func CallDBCenter[T *pbstruct.MicroUserInfo | *pbstruct.MicroUserToken | *pbstruct.TaskItem | *pbstruct.SCStaticTab | []*pbstruct.BagItem | *pbstruct.MicroUserTokenFixed | *pbstruct.MicroUserLogin | *pbstruct.MicroUserTokenAndUserInfo | bool | string](key string, args ...interface{}) T {
 	var _result = sendMicroDBKey(dbMicroClient, key, args...)
 	var result T
 	if _result != nil {

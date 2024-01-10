@@ -2,6 +2,7 @@ package dbcreatestruct
 
 import (
 	"baseutils/baseuts"
+	"gametools/confige"
 	"os"
 	"strings"
 
@@ -57,7 +58,7 @@ func CreateDBStructStart() {
 	err = os.MkdirAll(_path+"/dbstruct", os.ModePerm)
 	baseuts.ChkErr(err)
 
-	tableArray := baseuts.FindAllTable(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName)
+	tableArray := baseuts.FindAllTable(confige.MysqlAccount, confige.MysqlPwd, confige.MysqlHost, confige.MysqlPort, confige.MysqlDBName)
 	db_utils_python_str = "from dbstruct import "
 	db_utils_str := `package dbstruct` + "\n\n"
 	db_utils_str += `import (
@@ -76,7 +77,7 @@ func CreateDBStructStart() {
 	db_utils_str += `var DBInfo = DBTable{}` + "\n\n"
 	db_utils_str += `var DBTabName = map[string]DBFieldName{` + "\n"
 	for tabName, _ := range tableArray {
-		_tableFieldInfos := baseuts.FindDBTableField(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName, tabName)
+		_tableFieldInfos := baseuts.FindDBTableField(confige.MysqlAccount, confige.MysqlPwd, confige.MysqlHost, confige.MysqlPort, confige.MysqlDBName, tabName)
 		createStruct(tabName, _tableFieldInfos)
 	}
 	db_utils_str += tab_field_name_struct_str

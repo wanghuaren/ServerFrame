@@ -25,7 +25,6 @@ const DB_FIND_KEY string = "find_key"
 
 const DB_USERAPI_GetUserData string = "GetUserData"
 const DB_USERAPI_GetUserDataFromToken string = "GetUserDataFromToken"
-const DB_USERAPI_SetUserDataFromToken string = "SetUserDataFromToken"
 const DB_USERAPI_GetUserTokenFixed string = "GetUserTokenFixed"
 
 // const DB_USERAPI_GetUserTokenFixedFromToken string = "GetUserTokenFixedFromToken"

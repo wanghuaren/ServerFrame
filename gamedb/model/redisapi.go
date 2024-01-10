@@ -138,9 +138,9 @@ func checkRedis(r *redis.Client) bool {
 var tabDefaultValue = map[string]map[string]baseuts.Field{}
 
 func getTableDefaultValue() {
-	allTable := baseuts.FindAllTable(baseuts.MysqlAccount, baseuts.MysqlPwd, "127.0.0.1", baseuts.MysqlPort, baseuts.MysqlDBName)
+	allTable := baseuts.FindAllTable(Conf.String("db_account"), Conf.String("db_pwd"), "127.0.0.1", Conf.String("db_port"), Conf.String("db_name"))
 	for tabName := range allTable {
-		fields := baseuts.FindDBTableField(baseuts.MysqlAccount, baseuts.MysqlPwd, "127.0.0.1", baseuts.MysqlPort, baseuts.MysqlDBName, tabName)
+		fields := baseuts.FindDBTableField(Conf.String("db_account"), Conf.String("db_pwd"), "127.0.0.1", Conf.String("db_port"), Conf.String("db_name"), tabName)
 		var tabFields = map[string]baseuts.Field{}
 		for _, v := range fields {
 			if v.FieldName != "id" {
@@ -231,12 +231,12 @@ func dB2Cache() {
 }
 
 func BackUp() {
-	baseuts.BackupMysql(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlDBName)
+	baseuts.BackupMysql(Conf.String("db_account"), Conf.String("db_pwd"), Conf.String("db_name"))
 }
 
 func Cache2DB() {
 	BackUp()
-	tableData := baseuts.FindAllTable(baseuts.MysqlAccount, baseuts.MysqlPwd, "127.0.0.1", baseuts.MysqlPort, baseuts.MysqlDBName)
+	tableData := baseuts.FindAllTable(Conf.String("db_account"), Conf.String("db_pwd"), "127.0.0.1", Conf.String("db_port"), Conf.String("db_name"))
 	for k, v := range dbstruct.DBTabName {
 		_tabDesc := strings.Split(tableData[k], "#")
 		if len(_tabDesc) > 1 && _tabDesc[1] == "static" {
@@ -696,7 +696,7 @@ func RDFind(data interface{}, fields ...[]string) interface{} {
 						}
 					} else {
 						if searchFields[0] == "Id" {
-							_rootKey := tabName + ":" + strconv.FormatInt(int64(_map[0]["Id"].(int32)), 10)
+							_rootKey := tabName + ":" + strconv.FormatInt(_map[0]["Id"].(int64), 10)
 							_mapRedis, err := rdbSlave().HGetAll(_rootKey).Result()
 							if !ChkErr(err) {
 								_result, _ := dbuts.CreateStructFromDBDat(data)

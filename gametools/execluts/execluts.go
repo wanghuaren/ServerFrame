@@ -2,6 +2,7 @@ package execluts
 
 import (
 	"baseutils/baseuts"
+	"gametools/confige"
 	"io/fs"
 	"os"
 	"path"
@@ -38,13 +39,13 @@ func fileIsStatic(fileName string, findPath string, result *bool) {
 }
 
 func SaveDB2Execl() {
-	allTable := baseuts.FindAllTable(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName)
+	allTable := baseuts.FindAllTable(confige.MysqlAccount, confige.MysqlPwd, confige.MysqlHost, confige.MysqlPort, confige.MysqlDBName)
 	os.RemoveAll("execluts/execlout")
 	os.MkdirAll("execluts/execlout/动态配置表", fs.ModePerm)
 	os.MkdirAll("execluts/execlout/静态配置表", fs.ModePerm)
 	rowNum := 1
 	for k, desc := range allTable {
-		fields := baseuts.FindDBTableField(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName, k)
+		fields := baseuts.FindDBTableField(confige.MysqlAccount, confige.MysqlPwd, confige.MysqlHost, confige.MysqlPort, confige.MysqlDBName, k)
 		f := excelize.NewFile()
 		index, _ := f.NewSheet("Sheet1")
 		var cellWidth uint8 = 18
@@ -142,7 +143,7 @@ func SaveDB2Execl() {
 
 		rowNum++
 
-		allTableData := baseuts.FindDBTableData(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName, k)
+		allTableData := baseuts.FindDBTableData(confige.MysqlAccount, confige.MysqlPwd, confige.MysqlHost, confige.MysqlPort, confige.MysqlDBName, k)
 		num = 'A'
 		for _, _v := range fields {
 			fn := strings.ReplaceAll(strconv.QuoteRune(num), "'", "")
@@ -208,7 +209,7 @@ func getCellValue(values map[string]string, fieldST baseuts.Field) interface{} {
 var rootPath string
 
 func ImportExecl2DB() {
-	baseuts.BackupMysql(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlDBName)
+	baseuts.BackupMysql("root", "root2023", "xhhy")
 	pwd, err := os.Getwd()
 	if !baseuts.ChkErr(err) {
 		rootPath = pwd
@@ -231,8 +232,7 @@ option csharp_namespace = "PBStruct";` + "\n\n"
 		proroDBMapCount = 1
 
 		os.Remove("protobuff/proto/client/tables.proto")
-		// execl2Proto(rootPath + "/execluts/execlin")
-		mysql2Proto()
+		execl2Proto(rootPath + "/execluts/execlin")
 
 		if proroDBMapStr != "" {
 			protoStr += "message CSStaticTab {}\n\n"
@@ -330,7 +330,7 @@ func exec2DB(_path string) {
 							}
 						}
 
-						tableFieldData := baseuts.FindDBTableField(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName, tableName)
+						tableFieldData := baseuts.FindDBTableField(confige.MysqlAccount, confige.MysqlPwd, confige.MysqlHost, confige.MysqlPort, confige.MysqlDBName, tableName)
 						if CheckMysqlKeyword(tableName) {
 							baseuts.Log("表名 " + tableName + " 名称不规范")
 							continue
@@ -452,7 +452,7 @@ func exec2DB(_path string) {
 						}
 						// baseuts.Log(sqlProcess)
 						if sqlProcess != "" {
-							baseuts.ExecMySQLCommand(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName, sqlProcess)
+							baseuts.ExecMySQLCommand(confige.MysqlAccount, confige.MysqlPwd, confige.MysqlHost, confige.MysqlPort, confige.MysqlDBName, sqlProcess)
 						}
 					}
 				}
@@ -539,36 +539,6 @@ func execl2Proto(_path string) {
 	}
 }
 
-func mysql2Proto() {
-	tableArray := baseuts.FindAllTable(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName)
-	for tabName, tabDesc := range tableArray {
-		_tableFieldInfos := baseuts.FindDBTableField(baseuts.MysqlAccount, baseuts.MysqlPwd, baseuts.MysqlHost, baseuts.MysqlPort, baseuts.MysqlDBName, tabName)
-
-		tableName := strings.ToUpper(tabName[:1]) + strings.ToLower(tabName[1:])
-		var fieidsStr = ""
-
-		for num, value := range _tableFieldInfos {
-			// if num < len(field)-1 {
-			fValue := strings.ToLower(value.FieldName)
-			fieidsStr += "  " + fiedTypeDB2Proto(value.DataType) + " " + fValue + " = " + strconv.Itoa(num+1) + ";\n"
-			// }
-		}
-		if fieidsStr != "" {
-			protoStr += "message " + tableName + " {\n"
-			protoStr += fieidsStr
-			protoStr += "}\n\n"
-
-			protoStr += "message " + tableName + "_result {\n"
-			protoStr += "	repeated " + tableName + " data = 1;\n"
-			protoStr += "}\n\n"
-		}
-		if strings.Contains(tabDesc, "静态") {
-			proroDBMapStr += "  repeated " + tableName + " " + strings.ToLower(tableName) + " = " + strconv.Itoa(proroDBMapCount) + ";\n"
-		}
-		proroDBMapCount++
-	}
-}
-
 func fiedTypeExecl2Proto(execlType string) string {
 	switch execlType {
 	case "int":
@@ -581,20 +551,6 @@ func fiedTypeExecl2Proto(execlType string) string {
 		return "bool"
 	case "double":
 		return "double"
-	}
-	return ""
-}
-
-func fiedTypeDB2Proto(dbDataType string) string {
-	switch dbDataType {
-	case "int":
-		return "int32"
-	case "bigint":
-		return "int64"
-	case "varchar":
-		return "string"
-	case "tinyint":
-		return "bool"
 	}
 	return ""
 }

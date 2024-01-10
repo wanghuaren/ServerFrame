@@ -4,6 +4,7 @@ import (
 	"baseutils/baseuts"
 	"gameutils/common/commuts"
 	"gameutils/gameuts"
+	"gameutils/pbstruct"
 	"net/http"
 	"net/url"
 )
@@ -17,7 +18,7 @@ var ChkErr = baseuts.ChkErr
 
 var IsDebug = baseuts.Debug(Conf.Bool("debug"))
 
-// var StaticTables *pbstruct.SCStaticTab = nil
+var StaticTables *pbstruct.SCStaticTab = nil
 
 var ServerInChina = Conf.Bool("server_in_china")
 
@@ -38,7 +39,7 @@ func InitModel() {
 
 	go getGooglePayAccessToken()
 	initMicro()
-	// go initStaticTablesMap()
+	go initStaticTablesMap()
 
 	gameuts.PPROFCheck(Conf.String("host"), Conf.String("pprof_port"))
 }

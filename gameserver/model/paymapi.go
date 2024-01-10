@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"gameutils/pbstruct"
 	"io"
 	"net/http"
 )
@@ -16,16 +17,16 @@ type OrderInfo struct {
 	AcknowledgementState int    `json:"acknowledgementState"` // 支付类型:  0 测试, 1 真实
 }
 
-// func PayCheck(pbDat *pbstruct.CSPay) *OrderInfo {
-// 	var _order *OrderInfo
-// 	if ServerInChina {
-// 		_order = &OrderInfo{}
-// 		_order.PurchaseState = 0
-// 	} else {
-// 		_order = getOrder(pbDat.ProductId, pbDat.PurchaseToken, pbDat.PackageName, PayAccessToken)
-// 	}
-// 	return _order
-// }
+func PayCheck(pbDat *pbstruct.CSPay) *OrderInfo {
+	var _order *OrderInfo
+	if ServerInChina {
+		_order = &OrderInfo{}
+		_order.PurchaseState = 0
+	} else {
+		_order = getOrder(pbDat.ProductId, pbDat.PurchaseToken, pbDat.PackageName, PayAccessToken)
+	}
+	return _order
+}
 
 // 获取订单信息
 func getOrder(productId, token, packageName, accessToken string) *OrderInfo {

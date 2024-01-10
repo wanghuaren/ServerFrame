@@ -15,11 +15,11 @@ func getGameDBFunc(mtdb *pbstruct.MicroTransDB) *pbstruct.MicroTransDB {
 	case common.DB_USERAPI_GetUserData:
 		var _findDat = model.GetUserData(mtdb.FindKeyArgsInt[0])
 		if _findDat != nil {
-			// for i := range _findDat.Bag {
-			// 	if _findDat.Bag[i] == nil {
-			// 		_findDat.Bag[i] = &pbstruct.BagItem{Pos: -1, ItemId: 0}
-			// 	}
-			// }
+			for i := range _findDat.Bag {
+				if _findDat.Bag[i] == nil {
+					_findDat.Bag[i] = &pbstruct.BagItem{Pos: -1, ItemId: 0}
+				}
+			}
 			_result.FindResultBytes, _ = pbuts.ProtoMarshal(_findDat)
 		} else {
 			_result.FindResultBytes = nil
@@ -27,10 +27,6 @@ func getGameDBFunc(mtdb *pbstruct.MicroTransDB) *pbstruct.MicroTransDB {
 	case common.DB_USERAPI_GetUserDataFromToken:
 		var _findDat = model.GetUserDataFromToken(mtdb.FindKeyArgsString[0])
 		_result.FindResultBytes, _ = pbuts.ProtoMarshal(_findDat)
-	case common.DB_USERAPI_SetUserDataFromToken:
-		var userTab *pbstruct.CSUserInfo
-		pbuts.ProtoUnMarshal(mtdb.FindKeyArgsBytes, userTab)
-		model.SetUserDataFromToken(mtdb.FindKeyArgsString[0], userTab, mtdb.FindKeyArgsString)
 	case common.DB_USERAPI_GetUserTokenFixed:
 		var _findDat = model.GetUserTokenFixed(mtdb.FindKeyArgsString[0])
 		var _resultDat = pbstruct.MicroUserTokenAndUserInfo{}
@@ -57,15 +53,15 @@ func getGameDBFunc(mtdb *pbstruct.MicroTransDB) *pbstruct.MicroTransDB {
 	// 	model.CleanUserIndex(mtdb.FindKeyArgsString[0])
 	case common.DB_USERAPI_HeartJump:
 		model.HeartJump(mtdb.FindKeyArgsString[0])
-	// case common.DB_USERAPI_AddUserItem:
-	// 	model.AddUserItem(mtdb.FindKeyArgsInt[0], mtdb.FindKeyArgsInt[1], mtdb.FindKeyArgsInt[2])
-	// case common.DB_USERAPI_UseupUserItem:
-	// 	_result.FindResultBool = model.UseupUserItem(mtdb.FindKeyArgsInt[0], mtdb.FindKeyArgsInt[1], mtdb.FindKeyArgsInt[2])
-	// case common.DB_TABLEAPI_InitStaticTables:
-	// 	var _findDat = model.GetStaticTables()
-	// 	_result.FindResultBytes, _ = pbuts.ProtoMarshal(_findDat)
+	case common.DB_USERAPI_AddUserItem:
+		model.AddUserItem(mtdb.FindKeyArgsInt[0], mtdb.FindKeyArgsInt[1], mtdb.FindKeyArgsInt[2])
+	case common.DB_USERAPI_UseupUserItem:
+		_result.FindResultBool = model.UseupUserItem(mtdb.FindKeyArgsInt[0], mtdb.FindKeyArgsInt[1], mtdb.FindKeyArgsInt[2])
+	case common.DB_TABLEAPI_InitStaticTables:
+		var _findDat = model.GetStaticTables()
+		_result.FindResultBytes, _ = pbuts.ProtoMarshal(_findDat)
 	case common.DB_USERAPI_FinishTask:
-		// model.FinishTask(mtdb.FindKeyArgsInt[0], mtdb.FindKeyArgsInt[1])
+		model.FinishTask(mtdb.FindKeyArgsInt[0], mtdb.FindKeyArgsInt[1])
 	case common.DB_USERAPI_Login:
 		var _errNum, _token, _userInfo = model.Login(mtdb.FindKeyArgsString[0])
 		_findDat := pbstruct.MicroUserLogin{ErrNum: int32(_errNum), Token: _token, UserInfo: _userInfo}

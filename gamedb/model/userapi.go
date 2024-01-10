@@ -4,7 +4,6 @@ import (
 	"baseutils/baseuts"
 	"gameutils/common/commuts"
 	"gameutils/pbstruct"
-	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -28,16 +27,15 @@ var allUserInfo = sync.Map{}
 // user key -> UserInfoST
 var allUserInfoFromKey = sync.Map{}
 
-func Login(inventoryId string) (int, string, *pbstruct.UserTab) {
+func Login(inventoryId string) (int, string, *pbstruct.MicroUserInfo) {
 	// _result := pbstruct.SCLogin{}
 	var _resultErr = 0
 	var token = ""
 
 	_userTab := pbstruct.UserTab{}
-	_userTab.UserKey = inventoryId
-	// _userTab.InventoryId = inventoryId
+	_userTab.InventoryId = inventoryId
 	_userTab.RegTime = int32(time.Now().Unix())
-	_findAddUserTabResult := RDFindAutoAdd(&_userTab, []string{"UserKey"}, []string{"UserKey", "RegTime"})
+	_findAddUserTabResult := RDFindAutoAdd(&_userTab, []string{"InventoryId"}, []string{"InventoryId", "RegTime"})
 	if _findAddUserTabResult == nil {
 		_resultErr = 2
 	} else {
@@ -50,19 +48,20 @@ func Login(inventoryId string) (int, string, *pbstruct.UserTab) {
 				Log("login 唯一用户ID找到多条数据", _dat.Id)
 			}
 
-			token = CreateUserToken(int64(_dat.Id), _dat.UserKey)
+			token = CreateUserToken(int64(_dat.Id), _dat.InventoryId, int64(_dat.Yonghubianhao))
+			// _result.Token = token
 
-			// _userTabKC := pbstruct.Inventory{}
-			// _userTabKC.UserId = _dat.Id
-			// _findAddInventoryResult := RDFindAutoAdd(&_userTabKC, []string{"UserId"}, []string{"UserId"})
-			// if _findAddInventoryResult == nil {
-			// 	_resultErr = 3
-			// } else {
-			// 	var retInventory = _findAddInventoryResult.(*pbstruct.InventoryResult).Data
-			// 	CacheOneUserData(_dat.Id, retUserTab, retInventory)
-			_userCacheDat := GetUserData(int32(_dat.Id))
-			return _resultErr, token, _userCacheDat
-			// }
+			_userTabKC := pbstruct.Inventory{}
+			_userTabKC.UserId = _dat.Id
+			_findAddInventoryResult := RDFindAutoAdd(&_userTabKC, []string{"UserId"}, []string{"UserId"})
+			if _findAddInventoryResult == nil {
+				_resultErr = 3
+			} else {
+				var retInventory = _findAddInventoryResult.(*pbstruct.InventoryResult).Data
+				CacheOneUserData(_dat.Id, retUserTab, retInventory)
+				_userCacheDat := GetUserData(int32(_dat.Id))
+				return _resultErr, token, _userCacheDat
+			}
 		} else {
 			_resultErr = 4
 		}
@@ -70,9 +69,9 @@ func Login(inventoryId string) (int, string, *pbstruct.UserTab) {
 	return _resultErr, "", nil
 }
 
-func CreateUserToken(id int64, inventoryId string) string {
-	_ut := pbstruct.MicroUserToken{Id: int32(id), ClientKey: inventoryId}
-	fixedStrFromUserInfo := strconv.FormatInt(id, 10) + _ut.ClientKey
+func CreateUserToken(id int64, inventoryId string, yonghubianhao int64) string {
+	_ut := pbstruct.MicroUserToken{Id: int32(id), ClientKey: inventoryId, UserNO: int32(yonghubianhao)}
+	fixedStrFromUserInfo := strconv.FormatInt(id, 10) + _ut.ClientKey + strconv.FormatInt(yonghubianhao, 10)
 
 	var _tokenFixed = baseuts.GetMd5(fixedStrFromUserInfo)
 	var _tokenFixedValue *pbstruct.MicroUserTokenFixed
@@ -102,12 +101,12 @@ func CreateUserToken(id int64, inventoryId string) string {
 	return _tokenFixedValue.Token
 }
 
-func GetUserData(userID int32) *pbstruct.UserTab {
+func GetUserData(userID int32) *pbstruct.MicroUserInfo {
 	if _, ok := allUserInfo.Load(userID); !ok {
 		CacheOneUserData(userID)
 	}
 	if _dat, ok := allUserInfo.Load(userID); ok {
-		if _dat, ok := _dat.(*pbstruct.UserTab); ok {
+		if _dat, ok := _dat.(*pbstruct.MicroUserInfo); ok {
 			return _dat
 		}
 		return nil
@@ -116,7 +115,7 @@ func GetUserData(userID int32) *pbstruct.UserTab {
 	}
 }
 
-func GetUserDataFromToken(token string) *pbstruct.UserTab {
+func GetUserDataFromToken(token string) *pbstruct.MicroUserInfo {
 	if _dat, ok := userToken.Load(token); ok {
 		if _dat, ok := _dat.(*pbstruct.MicroUserToken); ok {
 			return GetUserData(int32(_dat.Id))
@@ -124,26 +123,6 @@ func GetUserDataFromToken(token string) *pbstruct.UserTab {
 		return nil
 	} else {
 		return nil
-	}
-}
-
-func SetUserDataFromToken(token string, pbdat *pbstruct.CSUserInfo, editFields []string) {
-	if _dat, ok := userToken.Load(token); ok {
-		if _dat, ok := _dat.(*pbstruct.MicroUserToken); ok {
-			var userDat = GetUserData(int32(_dat.Id))
-			for i := range editFields {
-				fieldsName := editFields[i]
-
-				userValue := reflect.ValueOf(userDat).Elem().FieldByName(fieldsName)
-				userValueDat := reflect.ValueOf(pbdat).Elem().FieldByName(fieldsName)
-
-				userValue.Set(userValueDat)
-			}
-		} else {
-			baseuts.LogF("SetUserDataFromToken err1", token)
-		}
-	} else {
-		baseuts.LogF("SetUserDataFromToken err2", token)
 	}
 }
 
@@ -217,59 +196,59 @@ func HeartJump(token string) {
 	fixedTokenDat.Timeout = int32(time.Now().Unix())
 }
 
-// func AddUserItem(id int32, itemID int32, num int32) {
-// 	_userData := GetUserData(id)
-// 	switch itemID {
-// 	case 20001:
-// 		_userData.Money += num
-// 	}
-// }
+func AddUserItem(id int32, itemID int32, num int32) {
+	_userData := GetUserData(id)
+	switch itemID {
+	case 20001:
+		_userData.Money += num
+	}
+}
 
-// func UseupUserItem(id int32, itemID int32, num int32) bool {
-// 	_userData := GetUserData(id)
-// 	switch itemID {
-// 	case 20001:
-// 		if _userData.Money < num {
-// 			return false
-// 		}
-// 		_userData.Money -= num
-// 		return true
-// 	}
-// 	return false
-// }
+func UseupUserItem(id int32, itemID int32, num int32) bool {
+	_userData := GetUserData(id)
+	switch itemID {
+	case 20001:
+		if _userData.Money < num {
+			return false
+		}
+		_userData.Money -= num
+		return true
+	}
+	return false
+}
 
-// func FinishTask(userID int32, taskID int32) {
-// 	_userData := GetUserData(userID)
-// 	for i := range _userData.Task {
-// 		_task := _userData.Task[i]
-// 		if _task.TaskId == taskID {
-// 			_task.IsFinish = true
-// 			break
-// 		}
-// 	}
-// }
+func FinishTask(userID int32, taskID int32) {
+	_userData := GetUserData(userID)
+	for i := range _userData.Task {
+		_task := _userData.Task[i]
+		if _task.TaskId == taskID {
+			_task.IsFinish = true
+			break
+		}
+	}
+}
 
-// func GetTask(userID int32, taskID int32) *pbstruct.TaskItem {
-// 	_userData := GetUserData(userID)
-// 	for i := range _userData.Task {
-// 		_task := _userData.Task[i]
-// 		if _task.TaskId == taskID {
-// 			return _task
-// 		}
-// 	}
-// 	return nil
-// }
+func GetTask(userID int32, taskID int32) *pbstruct.TaskItem {
+	_userData := GetUserData(userID)
+	for i := range _userData.Task {
+		_task := _userData.Task[i]
+		if _task.TaskId == taskID {
+			return _task
+		}
+	}
+	return nil
+}
 
 func FillUserInfo2Redis(dbST *pbstruct.UserTab, structUserDat *pbstruct.MicroUserInfo) []string {
 	dbST.Id = structUserDat.Id
-	// dbST.Wuqiid = structUserDat.Weapon
-	// dbST.Yonghubianhao = structUserDat.Number
-	// dbST.Money = structUserDat.Money
-	// dbST.Ticket = structUserDat.Ticket
-	// dbST.Skipad = structUserDat.SkipAD
+	dbST.Wuqiid = structUserDat.Weapon
+	dbST.Yonghubianhao = structUserDat.Number
+	dbST.Money = structUserDat.Money
+	dbST.Ticket = structUserDat.Ticket
+	dbST.Skipad = structUserDat.SkipAD
 
-	// dbST.Chakan = structUserDat.Chakan
-	// dbST.IsFirst = structUserDat.IsFirst
+	dbST.Chakan = structUserDat.Chakan
+	dbST.IsFirst = structUserDat.IsFirst
 
 	return []string{"Wuqiid", "Yonghubianhao", "Money", "Ticket", "Skipad", "Chakan", "IsFirst"}
 }
@@ -277,15 +256,15 @@ func FillUserInfo2Redis(dbST *pbstruct.UserTab, structUserDat *pbstruct.MicroUse
 func FillUserInfoFromRedis(structUserDat *pbstruct.MicroUserInfo, dbST *pbstruct.UserTab) {
 	structUserDat.Id = int32(dbST.Id)
 	structUserDat.Number = int32(UserSerialNumberBase + dbST.Id)
-	// structUserDat.ClientKey = dbST.InventoryId
+	structUserDat.ClientKey = dbST.InventoryId
 
-	// structUserDat.Weapon = int32(dbST.Wuqiid)
-	// structUserDat.Money = int32(dbST.Money)
-	// structUserDat.Ticket = int32(dbST.Ticket)
+	structUserDat.Weapon = int32(dbST.Wuqiid)
+	structUserDat.Money = int32(dbST.Money)
+	structUserDat.Ticket = int32(dbST.Ticket)
 
-	// structUserDat.SkipAD = dbST.Skipad
-	// structUserDat.Chakan = int32(dbST.Chakan)
-	// structUserDat.IsFirst = dbST.IsFirst
+	structUserDat.SkipAD = dbST.Skipad
+	structUserDat.Chakan = int32(dbST.Chakan)
+	structUserDat.IsFirst = dbST.IsFirst
 }
 
 func CheckUserFlushData2Redis() {
@@ -345,7 +324,7 @@ func FlushAllData2RedisNow() {
 	Log("全部用户数据写入Redis")
 	allUserInfo.Range(func(key, value any) bool {
 		k := key.(int32)
-		v := value.(*pbstruct.UserTab)
+		v := value.(*pbstruct.MicroUserInfo)
 		if k != v.Id {
 			// continue
 		} else {
@@ -356,76 +335,75 @@ func FlushAllData2RedisNow() {
 	Log("全部用户数据写入Redis完成")
 }
 
-func flushOneUser2Redis(userST *pbstruct.UserTab) {
-	// _userTab := &pbstruct.UserTab{}
-	// _editFields := FillUserInfo2Redis(_userTab, userST)
+func flushOneUser2Redis(userST *pbstruct.MicroUserInfo) {
+	_userTab := &pbstruct.UserTab{}
+	_editFields := FillUserInfo2Redis(_userTab, userST)
 
-	_editFields := []string{"Nickname", "UserSex", "UserScore"}
-	// for i := range userST.Task {
-	// 	_task := userST.Task[i]
-	// 	if _task.IsFinish {
-	// 		_userTab.MissionFinish += strconv.FormatInt(int64(_task.TaskId), 10) + "#"
-	// 	}
-	// 	_userTab.Mission += strconv.FormatInt(int64(_task.TaskId), 10) + "#"
-	// }
+	for i := range userST.Task {
+		_task := userST.Task[i]
+		if _task.IsFinish {
+			_userTab.MissionFinish += strconv.FormatInt(int64(_task.TaskId), 10) + "#"
+		}
+		_userTab.Mission += strconv.FormatInt(int64(_task.TaskId), 10) + "#"
+	}
 
-	// if _userTab.MissionFinish != "" {
-	// 	_userTab.MissionFinish = _userTab.MissionFinish[:len(_userTab.MissionFinish)-1]
-	// }
+	if _userTab.MissionFinish != "" {
+		_userTab.MissionFinish = _userTab.MissionFinish[:len(_userTab.MissionFinish)-1]
+	}
 
-	// if _userTab.Mission != "" {
-	// 	_userTab.Mission = _userTab.Mission[:len(_userTab.Mission)-1]
-	// }
-	// _editFields = append(_editFields, "MissionFinish", "Mission")
-	_editUserTabBack := RDEdit(userST, []string{"Id"}, _editFields)
+	if _userTab.Mission != "" {
+		_userTab.Mission = _userTab.Mission[:len(_userTab.Mission)-1]
+	}
+	_editFields = append(_editFields, "MissionFinish", "Mission")
+	_editUserTabBack := RDEdit(_userTab, []string{"Id"}, _editFields)
 	if _editUserTabBack == nil {
-		Log("FlushAllData A", commuts.Struct2Map(userST))
+		Log("FlushAllData A", commuts.Struct2Map(_userTab))
 	} else {
-		// for i := range userST.Bag {
-		// 	_bagItem := userST.Bag[i]
-		// 	if _bagItem == nil || _bagItem.ItemId == 0 {
-		// 		continue
-		// 	}
-		// 	_inventoryTab := &pbstruct.Inventory{}
-		// 	_inventoryTab.UserId = userST.Id
-		// 	_inventoryTab.Position = _bagItem.Pos
-		// 	_inventoryTab.WeaponId = _bagItem.ItemId
-		// 	_inventoryTabDat := RDEdit(_inventoryTab, []string{"UserId", "Position"}, []string{"WeaponId"})
-		// 	if _inventoryTabDat == nil {
-		// 		_inventoryTabAddBack := RDAdd(_inventoryTab, nil, []string{"UserId", "Position", "WeaponId"})
-		// 		if _inventoryTabAddBack == nil {
-		// 			Log("FlushAllData B", commuts.Struct2Map(_inventoryTab))
-		// 		}
-		// 	}
-		// }
+		for i := range userST.Bag {
+			_bagItem := userST.Bag[i]
+			if _bagItem == nil || _bagItem.ItemId == 0 {
+				continue
+			}
+			_inventoryTab := &pbstruct.Inventory{}
+			_inventoryTab.UserId = userST.Id
+			_inventoryTab.Position = _bagItem.Pos
+			_inventoryTab.WeaponId = _bagItem.ItemId
+			_inventoryTabDat := RDEdit(_inventoryTab, []string{"UserId", "Position"}, []string{"WeaponId"})
+			if _inventoryTabDat == nil {
+				_inventoryTabAddBack := RDAdd(_inventoryTab, nil, []string{"UserId", "Position", "WeaponId"})
+				if _inventoryTabAddBack == nil {
+					Log("FlushAllData B", commuts.Struct2Map(_inventoryTab))
+				}
+			}
+		}
 
-		// _inventoryTab := &pbstruct.Inventory{UserId: userST.Id}
-		// _inventoryTabListResult := RDFind(_inventoryTab, []string{"UserId"})
-		// if _inventoryTabListResult == nil {
-		// 	Log("FlushAllData C", commuts.Struct2Map(_inventoryTab))
-		// } else {
-		// 	_inventoryTabList := _inventoryTabListResult.(*pbstruct.InventoryResult).Data
+		_inventoryTab := &pbstruct.Inventory{UserId: userST.Id}
+		_inventoryTabListResult := RDFind(_inventoryTab, []string{"UserId"})
+		if _inventoryTabListResult == nil {
+			Log("FlushAllData C", commuts.Struct2Map(_inventoryTab))
+		} else {
+			_inventoryTabList := _inventoryTabListResult.(*pbstruct.InventoryResult).Data
 
-		// 	for i := range _inventoryTabList {
-		// 		_ret := _inventoryTabList[i]
-		// 		_has := false
-		// 		for n := range userST.Bag {
-		// 			_bagItem := userST.Bag[n]
-		// 			if _bagItem == nil || _bagItem.ItemId == 0 {
-		// 				continue
-		// 			}
-		// 			if _ret.Position == _bagItem.Pos {
-		// 				_has = true
-		// 				break
-		// 			}
-		// 		}
-		// 		if !_has {
-		// 			_inventoryTabDelBack := RDDel(_ret, []string{"Id"})
-		// 			if _inventoryTabDelBack == nil {
-		// 				Log("FlushAllData D", commuts.Struct2Map(_ret))
-		// 			}
-		// 		}
-		// 	}
-		// }
+			for i := range _inventoryTabList {
+				_ret := _inventoryTabList[i]
+				_has := false
+				for n := range userST.Bag {
+					_bagItem := userST.Bag[n]
+					if _bagItem == nil || _bagItem.ItemId == 0 {
+						continue
+					}
+					if _ret.Position == _bagItem.Pos {
+						_has = true
+						break
+					}
+				}
+				if !_has {
+					_inventoryTabDelBack := RDDel(_ret, []string{"Id"})
+					if _inventoryTabDelBack == nil {
+						Log("FlushAllData D", commuts.Struct2Map(_ret))
+					}
+				}
+			}
+		}
 	}
 }

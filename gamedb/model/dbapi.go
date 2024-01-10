@@ -13,8 +13,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func initDB() {
-	err := orm.RegisterDataBase("default", "mysql", baseuts.MysqlAccount+":"+baseuts.MysqlPwd+"@tcp(127.0.0.1:"+baseuts.MysqlPort+")/"+baseuts.MysqlDBName+"?charset=utf8&parseTime=true&loc=Local")
+func initDB(db_name string) {
+	err := orm.RegisterDataBase("default", "mysql", "root:root2023@tcp(127.0.0.1:"+Conf.String("db_port")+")/"+db_name+"?charset=utf8&parseTime=true&loc=Local")
 	if !ChkErr(err, "连接数据库失败:") {
 		for _, v := range dbstruct.DBTabName {
 			rs := v.MStruct()
@@ -25,7 +25,7 @@ func initDB() {
 	} else {
 		Log("重试")
 		time.Sleep(time.Second)
-		initDB()
+		initDB(db_name)
 	}
 	orm.Debug = IsDebug
 }

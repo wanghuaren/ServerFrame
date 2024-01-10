@@ -4,6 +4,7 @@ import (
 	"baseutils/baseuts"
 	"gameutils/common/commuts"
 	"gameutils/gameuts"
+	"gameutils/pbstruct"
 )
 
 var Conf gameuts.IConfig = gameuts.InitConf("dbconf.ini", "database")
@@ -20,13 +21,13 @@ const UserSerialNumberBase = 100000
 
 const UserDropLineTimeout int64 = 60 * 2
 
-// var StaticTables *pbstruct.SCStaticTab = nil
+var StaticTables *pbstruct.SCStaticTab = nil
 
 var LocalIP = baseuts.GetLocalIP()
 
 func InitModel() {
 	initConsul()
-	initDB()
+	initDB(Conf.String("db_name"))
 	initRedis()
 	dB2Cache()
 	initMicro()

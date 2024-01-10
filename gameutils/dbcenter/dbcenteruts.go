@@ -114,13 +114,13 @@ func sendMicroDBKeyBase(dbMicroClient gameuts.IMicroClient, key string, argsStri
 	case common.DB_USERAPI_UseupUserItem:
 		return _mtdb.FindResultBool
 
-	// case common.DB_TABLEAPI_InitStaticTables:
-	// 	if _mtdb.FindResultBytes == nil {
-	// 		return nil
-	// 	}
-	// 	var _result = &pbstruct.SCStaticTab{}
-	// 	pbuts.ProtoUnMarshal(_mtdb.FindResultBytes, _result)
-	// 	return _result
+	case common.DB_TABLEAPI_InitStaticTables:
+		if _mtdb.FindResultBytes == nil {
+			return nil
+		}
+		var _result = &pbstruct.SCStaticTab{}
+		pbuts.ProtoUnMarshal(_mtdb.FindResultBytes, _result)
+		return _result
 	case common.DB_USERAPI_FinishTask:
 
 	case common.DB_USERAPI_Login:

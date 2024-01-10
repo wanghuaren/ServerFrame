@@ -38,9 +38,9 @@ func BackupMysql(account string, pwd string, dbName string) {
 
 func AutoBackupMysql() {
 	_args := []string{}
-	_args = append(_args, "-u"+MysqlAccount)
-	_args = append(_args, "-p"+MysqlPwd)
-	_args = append(_args, MysqlDBName)
+	_args = append(_args, "-uroot")
+	_args = append(_args, "-proot2023")
+	_args = append(_args, "xhhy")
 
 	if _, err := os.Stat("./mysql"); err != nil && os.IsNotExist(err) {
 		os.Mkdir("./mysql", os.ModePerm)

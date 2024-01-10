@@ -4,6 +4,7 @@ import (
 	"baseutils/baseuts"
 	"gameutils/common"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/timeout"
@@ -23,7 +24,7 @@ func InitHttp(regisiter map[string]func(c *gin.Context), websocketCallback func(
 	regisiter["socket"] = initWebSocket
 
 	initHttpServer(regisiter)
-	// initHttpWeb()
+	initHttpWeb()
 }
 
 func initHttpWeb() {
@@ -70,21 +71,21 @@ func runGin(httpGin *gin.Engine, httpListenerStr string, isWeb ...bool) {
 	go func() {
 		defer baseuts.ChkRecover()
 
-		// if strings.Contains(LocalIP, "192.168") {
-		if len(isWeb) > 0 {
-			httpListenerStr += ":80"
+		if strings.Contains(LocalIP, "192.168") {
+			if len(isWeb) > 0 {
+				httpListenerStr += ":80"
+			}
+			httpGin.Run(httpListenerStr)
+		} else {
+			if len(isWeb) > 0 {
+				httpListenerStr += ":443"
+			}
+			if ServerInChina {
+				httpGin.RunTLS(httpListenerStr, "./gw.xhhuyu.com/gw.xhhuyu.com_bundle.pem", "./gw.xhhuyu.com/gw.xhhuyu.com.key")
+			} else {
+				httpGin.RunTLS(httpListenerStr, "./api.xhhuyu.com/api.xhhuyu.com_bundle.pem", "./api.xhhuyu.com/api.xhhuyu.com.key")
+			}
 		}
-		httpGin.Run(httpListenerStr)
-		// } else {
-		// 	if len(isWeb) > 0 {
-		// 		httpListenerStr += ":443"
-		// 	}
-		// 	if ServerInChina {
-		// 		httpGin.RunTLS(httpListenerStr, "./gw.xhhuyu.com/gw.xhhuyu.com_bundle.pem", "./gw.xhhuyu.com/gw.xhhuyu.com.key")
-		// 	} else {
-		// 		httpGin.RunTLS(httpListenerStr, "./api.xhhuyu.com/api.xhhuyu.com_bundle.pem", "./api.xhhuyu.com/api.xhhuyu.com.key")
-		// 	}
-		// }
 	}()
 }
 

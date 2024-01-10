@@ -31,7 +31,7 @@ func login(pbDat *pbstruct.CSLogin, rsp *[]byte, token string, jsonRsp ...*strin
 			} else {
 				findDat := model.CallDBCenter[*pbstruct.MicroUserLogin](common.DB_USERAPI_Login, pbDat.InventoryId)
 				if findDat == nil {
-					_resultErr = 6
+					_resultErr = 5
 				} else {
 					_resultErr = findDat.ErrNum
 
@@ -39,13 +39,12 @@ func login(pbDat *pbstruct.CSLogin, rsp *[]byte, token string, jsonRsp ...*strin
 					_result.Token = token
 
 					_userST := findDat.UserInfo
-					_userST.Nickname = _userST.UserKey
 					_sc := pbstruct.SCUserInfo{}
 					model.FillUserInfo2Proto(&_sc, _userST)
 					_result.Userinfo = &_sc
 
-					// _result.UserBag = &pbstruct.SCBag{Bag: _userST.Bag[:]}
-					// _result.StaticTab = model.StaticTables
+					_result.UserBag = &pbstruct.SCBag{Bag: _userST.Bag[:]}
+					_result.StaticTab = model.StaticTables
 				}
 			}
 			logingNow.Delete(pbDat.InventoryId)
@@ -60,8 +59,8 @@ func login(pbDat *pbstruct.CSLogin, rsp *[]byte, token string, jsonRsp ...*strin
 			_sc := pbstruct.SCUserInfo{}
 			model.FillUserInfo2Proto(&_sc, _userCacheDat)
 			_result.Userinfo = &_sc
-			// _result.UserBag = &pbstruct.SCBag{Bag: _userCacheDat.Bag[:]}
-			// _result.StaticTab = model.StaticTables
+			_result.UserBag = &pbstruct.SCBag{Bag: _userCacheDat.Bag[:]}
+			_result.StaticTab = model.StaticTables
 			LogDebug("复用数据", commuts.Struct2Map(&_result))
 		} else {
 			LogDebug("复用数据出错")
