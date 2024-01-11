@@ -9,15 +9,16 @@ import (
 )
 
 //lint:ignore U1000 Ignore unused function temporarily for debugging
-func sendMicroDBKeyBytes(dbMicroClient gameuts.IMicroClient, key string, args []byte) interface{} {
-	return sendMicroDBKeyBase(dbMicroClient, key, nil, nil, nil, args)
-}
+// func sendMicroDBKeyBytes(dbMicroClient gameuts.IMicroClient, key string, args []byte) interface{} {
+// 	return sendMicroDBKeyBase(dbMicroClient, key, nil, nil, nil, args)
+// }
 
 //lint:ignore U1000 Ignore unused function temporarily for debugging
 func sendMicroDBKey(dbMicroClient gameuts.IMicroClient, key string, args ...interface{}) interface{} {
 	_stringArgs := []string{}
 	_intArgs := []int32{}
 	_boolArgs := []bool{}
+	var _bytesArgs []byte
 	for i := range args {
 		switch _dat := args[i].(type) {
 		case int:
@@ -34,9 +35,11 @@ func sendMicroDBKey(dbMicroClient gameuts.IMicroClient, key string, args ...inte
 			_stringArgs = append(_stringArgs, _dat)
 		case bool:
 			_boolArgs = append(_boolArgs, _dat)
+		case []byte:
+			_bytesArgs = _dat
 		}
 	}
-	return sendMicroDBKeyBase(dbMicroClient, key, _stringArgs, _intArgs, _boolArgs, nil)
+	return sendMicroDBKeyBase(dbMicroClient, key, _stringArgs, _intArgs, _boolArgs, _bytesArgs)
 }
 
 func sendMicroDBKeyBase(dbMicroClient gameuts.IMicroClient, key string, argsString []string, argsInt []int32, argsBool []bool, argsBytes []byte) interface{} {
@@ -71,6 +74,14 @@ func sendMicroDBKeyBase(dbMicroClient gameuts.IMicroClient, key string, argsStri
 			return nil
 		}
 		var _result = &pbstruct.MicroUserInfo{}
+		pbuts.ProtoUnMarshal(_mtdb.FindResultBytes, _result)
+		return _result
+
+	case common.DB_USERAPI_SetUserDataFromToken:
+		if _mtdb.FindResultBytes == nil {
+			return nil
+		}
+		var _result = &pbstruct.UserTab{}
 		pbuts.ProtoUnMarshal(_mtdb.FindResultBytes, _result)
 		return _result
 	case common.DB_USERAPI_GetUserTokenFixed:

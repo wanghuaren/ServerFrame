@@ -4,6 +4,7 @@ import (
 	"gameserver/model"
 	"gameutils/common"
 	"gameutils/common/microuts"
+	"gameutils/common/pbuts"
 	"gameutils/pbstruct"
 )
 
@@ -25,7 +26,8 @@ func changeName(pbDat *pbstruct.CSChangeName, rsp *[]byte, token string, jsonRsp
 	_result := pbstruct.SCUserInfo{}
 	_resultErr := 0
 	var _dat = &pbstruct.UserTab{Nickname: pbDat.Nickname}
-	_dat = model.CallDBCenter[*pbstruct.UserTab](common.DB_USERAPI_SetUserDataFromToken, token, _dat, "Nickname")
+	_datBytes, _ := pbuts.ProtoMarshal(_dat)
+	_dat = model.CallDBCenter[*pbstruct.UserTab](common.DB_USERAPI_SetUserDataFromToken, token, _datBytes, "Nickname")
 	if _dat != nil {
 		model.FillUserInfo2Proto(&_result, _dat)
 	} else {

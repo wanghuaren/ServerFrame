@@ -260,13 +260,14 @@ func Cache2DB() {
 			_value := reflect.ValueOf(_struct).Elem()
 			_editField := []string{}
 			for i := 0; i < _value.NumField(); i++ {
-				__type := _type.Field(i)
-				if __type.Name == "state" || __type.Name == "sizeCache" || __type.Name == "unknownFields" {
+				_typeName := _type.Field(i).Name
+				if _typeName == "state" || _typeName == "sizeCache" || _typeName == "unknownFields" {
 					continue
 				}
 				__value := _value.Field(i)
-				_mValue := __ret[strings.ToLower(__type.Name)]
-				_editField = append(_editField, __type.Name)
+				_mValue := __ret[strings.ToLower(_typeName)]
+				_typeName = strings.ToLower(_typeName[:1]) + _typeName[1:]
+				_editField = append(_editField, baseuts.CamelCase2UnderScoreCase(_typeName))
 				switch __value.Kind() {
 				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 					_r, _ := strconv.ParseInt(_mValue, 10, 64)

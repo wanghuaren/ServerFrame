@@ -127,7 +127,7 @@ func GetUserDataFromToken(token string) *pbstruct.UserTab {
 	}
 }
 
-func SetUserDataFromToken(token string, pbdat *pbstruct.CSUserInfo, editFields []string) {
+func SetUserDataFromToken(token string, pbdat *pbstruct.UserTab, editFields []string) *pbstruct.UserTab {
 	if _dat, ok := userToken.Load(token); ok {
 		if _dat, ok := _dat.(*pbstruct.MicroUserToken); ok {
 			var userDat = GetUserData(int32(_dat.Id))
@@ -139,12 +139,14 @@ func SetUserDataFromToken(token string, pbdat *pbstruct.CSUserInfo, editFields [
 
 				userValue.Set(userValueDat)
 			}
+			return userDat
 		} else {
 			baseuts.LogF("SetUserDataFromToken err1", token)
 		}
 	} else {
 		baseuts.LogF("SetUserDataFromToken err2", token)
 	}
+	return nil
 }
 
 func GetUserTokenFixed(tokenFixed string) *pbstruct.MicroUserTokenFixed {

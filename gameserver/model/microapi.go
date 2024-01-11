@@ -73,7 +73,7 @@ func SendMicroGate(key string, buff []byte) *pbstruct.MicroTrans {
 	return microTrans
 }
 
-func CallDBCenter[T *pbstruct.UserTab | *pbstruct.MicroUserToken | *pbstruct.MicroUserTokenFixed | *pbstruct.MicroUserLogin | *pbstruct.MicroUserTokenAndUserInfo | bool | string](key string, args ...interface{}) T {
+func CallDBCenter[T *pbstruct.UserTab | *pbstruct.MicroUserInfo | *pbstruct.MicroUserToken | *pbstruct.MicroUserTokenFixed | *pbstruct.MicroUserLogin | *pbstruct.MicroUserTokenAndUserInfo | bool | string](key string, args ...interface{}) T {
 	var _result = sendMicroDBKey(dbMicroClient, key, args...)
 	var result T
 	if _result != nil {
@@ -82,14 +82,14 @@ func CallDBCenter[T *pbstruct.UserTab | *pbstruct.MicroUserToken | *pbstruct.Mic
 	return result
 }
 
-func CallDBCenterBytes[T *pbstruct.MicroUserInfo](key string, args []byte) T {
-	var _result = sendMicroDBKeyBytes(dbMicroClient, key, args)
-	var result T
-	if _result != nil {
-		result = _result.(T)
-	}
-	return result
-}
+// func CallDBCenterBytes[T *pbstruct.MicroUserInfo](key string, args []byte) T {
+// 	var _result = sendMicroDBKeyBytes(dbMicroClient, key, args)
+// 	var result T
+// 	if _result != nil {
+// 		result = _result.(T)
+// 	}
+// 	return result
+// }
 
 //go:linkname sendMicroDBKey gameutils/dbcenter.sendMicroDBKey
 func sendMicroDBKey(dbMicroClient gameuts.IMicroClient, key string, args ...interface{}) interface{}
