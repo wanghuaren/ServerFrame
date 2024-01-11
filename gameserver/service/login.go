@@ -39,7 +39,7 @@ func login(pbDat *pbstruct.CSLogin, rsp *[]byte, token string, jsonRsp ...*strin
 					_result.Token = token
 
 					_userST := findDat.UserInfo
-					_userST.Nickname = _userST.UserKey
+					// _userST.Nickname = _userST.UserKey
 					_sc := pbstruct.SCUserInfo{}
 					model.FillUserInfo2Proto(&_sc, _userST)
 					_result.Userinfo = &_sc

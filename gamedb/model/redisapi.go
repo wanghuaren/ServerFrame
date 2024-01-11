@@ -261,6 +261,9 @@ func Cache2DB() {
 			_editField := []string{}
 			for i := 0; i < _value.NumField(); i++ {
 				__type := _type.Field(i)
+				if __type.Name == "state" || __type.Name == "sizeCache" || __type.Name == "unknownFields" {
+					continue
+				}
 				__value := _value.Field(i)
 				_mValue := __ret[strings.ToLower(__type.Name)]
 				_editField = append(_editField, __type.Name)

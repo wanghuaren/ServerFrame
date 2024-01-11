@@ -83,6 +83,9 @@ func CacheOneUserData(userID int32, dbstd ...interface{}) {
 				// 	_userInfo.Bag = append(_userInfo.Bag, &pbstruct.BagItem{})
 				// }
 				allUserInfo.Store(int32(_item.Id), _item)
+				if _item.Nickname == "" {
+					_item.Nickname = _item.UserKey
+				}
 				// allUserInfoFromKey.Store(_item.InventoryId, _userInfo)
 
 				// FillUserInfoFromRedis(_userInfo, _item)
