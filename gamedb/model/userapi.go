@@ -127,6 +127,19 @@ func GetUserDataFromToken(token string) *pbstruct.UserTab {
 	}
 }
 
+func GetUserDataRank(args ...int32) *pbstruct.UserTabResult {
+	var maxLen int32 = 50
+	if len(args) > 0 {
+		maxLen = args[0]
+	}
+	_result := &pbstruct.UserTabResult{}
+	allUserInfo.Range(func(k any, v any) bool {
+		_result.Data = append(_result.Data, v.(*pbstruct.UserTab))
+		return len(_result.Data) < int(maxLen)
+	})
+	return _result
+}
+
 func SetUserDataFromToken(token string, pbdat *pbstruct.UserTab, editFields []string) *pbstruct.UserTab {
 	if _dat, ok := userToken.Load(token); ok {
 		if _dat, ok := _dat.(*pbstruct.MicroUserToken); ok {

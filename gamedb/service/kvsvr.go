@@ -27,6 +27,14 @@ func getGameDBFunc(mtdb *pbstruct.MicroTransDB) *pbstruct.MicroTransDB {
 	case common.DB_USERAPI_GetUserDataFromToken:
 		var _findDat = model.GetUserDataFromToken(mtdb.FindKeyArgsString[0])
 		_result.FindResultBytes, _ = pbuts.ProtoMarshal(_findDat)
+	case common.DB_USERAPI_GetUserDataRank:
+		var _findDat *pbstruct.UserTabResult
+		if len(mtdb.FindKeyArgsInt) > 0 {
+			_findDat = model.GetUserDataRank(mtdb.FindKeyArgsInt[0])
+		} else {
+			_findDat = model.GetUserDataRank()
+		}
+		_result.FindResultBytes, _ = pbuts.ProtoMarshal(_findDat)
 	case common.DB_USERAPI_SetUserDataFromToken:
 		var userTab = &pbstruct.UserTab{}
 		pbuts.ProtoUnMarshal(mtdb.FindKeyArgsBytes, userTab)

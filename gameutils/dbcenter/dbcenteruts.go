@@ -76,7 +76,13 @@ func sendMicroDBKeyBase(dbMicroClient gameuts.IMicroClient, key string, argsStri
 		var _result = &pbstruct.MicroUserInfo{}
 		pbuts.ProtoUnMarshal(_mtdb.FindResultBytes, _result)
 		return _result
-
+	case common.DB_USERAPI_GetUserDataRank:
+		if _mtdb.FindResultBytes == nil {
+			return nil
+		}
+		var _result = &pbstruct.UserTabResult{}
+		pbuts.ProtoUnMarshal(_mtdb.FindResultBytes, _result)
+		return _result
 	case common.DB_USERAPI_SetUserDataFromToken:
 		if _mtdb.FindResultBytes == nil {
 			return nil

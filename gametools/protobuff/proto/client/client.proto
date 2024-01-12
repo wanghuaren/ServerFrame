@@ -55,6 +55,6 @@ message CSRank {
 }
 
 message SCRank {
-  repeated SCUserInfo userinfo = 1;
+  repeated SCUserInfo userRank = 1;
   int32 selfRank = 2;
 }

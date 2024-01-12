@@ -25,12 +25,14 @@ const DB_FIND_KEY string = "find_key"
 
 const DB_USERAPI_GetUserData string = "GetUserData"
 const DB_USERAPI_GetUserDataFromToken string = "GetUserDataFromToken"
+const DB_USERAPI_GetUserDataRank string = "GetUserDataRank"
 const DB_USERAPI_SetUserDataFromToken string = "SetUserDataFromToken"
 const DB_USERAPI_GetUserTokenFixed string = "GetUserTokenFixed"
 
 // const DB_USERAPI_GetUserTokenFixedFromToken string = "GetUserTokenFixedFromToken"
 const DB_USERAPI_GetUserToken string = "GetUserToken"
 const DB_USERAPI_GetUserTokenFromKey string = "GetUserTokenFromKey"
+
 // const DB_USERAPI_SetUserTokenFromKey string = "SetUserTokenFromKey"
 const DB_USERAPI_CleanUserTokenFromKey string = "CleanUserTokenFromKey"
 
