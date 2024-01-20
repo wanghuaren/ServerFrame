@@ -1,6 +1,5 @@
 #CentOS 8 添加 mirror
-$ sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
-$ sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+$ sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*;sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 
 #添加EPEL仓库
 sudo yum install epel-release
@@ -22,7 +21,7 @@ systemctl start redis
 #systemctl disable redis.service #停止开机自启动
 
 #编辑配置文件
-vim /etc/resid.conf
+vim /etc/redis.conf
 
 #开启aof持久化, 开启可能会报 systemd错误
 appendonly yes

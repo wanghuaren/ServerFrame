@@ -41,16 +41,7 @@ func StructReflect2Map(_type reflect.Type, _value reflect.Value) map[string]inte
 		case reflect.Bool:
 			_itemMap[_fType.Name] = _fValue.Bool()
 		case reflect.Slice:
-			var _ret = []map[string]interface{}{}
-			for i := 0; i < _fValue.Len(); i++ {
-				_mValue := _fValue.Index(i)
-				if _mValue.IsNil() {
-					_ret = append(_ret, nil)
-				} else {
-					_ret = append(_ret, Struct2Map(_mValue.Interface()))
-				}
-			}
-			_itemMap[_fType.Name] = _ret
+			_itemMap[_fType.Name] = forMatSlice(_fValue)
 		case reflect.Ptr:
 			if _fValue.IsNil() {
 				_itemMap[_fType.Name] = "nil"
@@ -61,6 +52,74 @@ func StructReflect2Map(_type reflect.Type, _value reflect.Value) map[string]inte
 		}
 	}
 	return _itemMap
+}
+
+func forMatSlice(_sliceValue reflect.Value) []interface{} {
+	if _sliceValue.IsNil() {
+		return nil
+	} else {
+		_ret := []interface{}{}
+
+		for i := 0; i < _sliceValue.Len(); i++ {
+			_mValue := _sliceValue.Index(i)
+			switch _mValue.Kind() {
+			case reflect.Struct:
+				_ret = append(_ret, Struct2Map(_mValue.Interface()))
+			case reflect.Slice:
+				_ret = append(_ret, forMatSlice(_mValue))
+			case reflect.String:
+				_ret = append(_ret, _mValue.String())
+			case reflect.Int:
+				_ret = append(_ret, _mValue.Int())
+			case reflect.Int8:
+				_ret = append(_ret, _mValue.Int())
+			case reflect.Int16:
+				_ret = append(_ret, _mValue.Int())
+			case reflect.Int32:
+				_ret = append(_ret, _mValue.Int())
+			case reflect.Int64:
+				_ret = append(_ret, _mValue.Int())
+			case reflect.Float32, reflect.Float64:
+				_ret = append(_ret, _mValue.Float())
+			case reflect.Bool:
+				_ret = append(_ret, _mValue.Bool())
+			case reflect.Ptr:
+				if _mValue.IsNil() {
+					_ret = append(_ret, nil)
+				} else {
+					_ret = append(_ret, forMatInterface(_mValue))
+				}
+			}
+		}
+		return _ret
+	}
+}
+
+func forMatInterface(_interfaceValue reflect.Value) interface{} {
+	_mValue := _interfaceValue.Elem()
+	switch _mValue.Kind() {
+	case reflect.Struct:
+		return Struct2Map(_mValue.Interface())
+	case reflect.Slice:
+		return forMatSlice(_mValue)
+	case reflect.String:
+		return _mValue.String()
+	case reflect.Int:
+		return _mValue.Int()
+	case reflect.Int8:
+		return _mValue.Int()
+	case reflect.Int16:
+		return _mValue.Int()
+	case reflect.Int32:
+		return _mValue.Int()
+	case reflect.Int64:
+		return _mValue.Int()
+	case reflect.Float32, reflect.Float64:
+		return _mValue.Float()
+	case reflect.Bool:
+		return _mValue.Bool()
+	}
+	return nil
 }
 
 func Map2Struct(_struct interface{}, mapValue interface{}, skipErrPrint ...bool) {
